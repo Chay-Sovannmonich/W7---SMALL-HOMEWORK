@@ -1,27 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../data/repositories/songs/song_repository.dart';
 import '../../../../model/songs/song.dart';
-import '../../../states/player_state.dart';
 import '../../../states/settings_state.dart';
 import '../../../theme/theme.dart';
+import '../view_model/library_view_model.dart';
 
-class LibraryScreen extends StatelessWidget {
-  const LibraryScreen({super.key});
+class LibraryContent extends StatelessWidget {
+  const LibraryContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // 1- Read the globbal song repository
-    SongRepository songRepository = context.read<SongRepository>();
-    List<Song> songs = songRepository.fetchSongs();
-
-    // 2- Read the globbal settings state
+    LibraryViewModel viewModel = context.watch<LibraryViewModel>();
     AppSettingsState settingsState = context.read<AppSettingsState>();
-
-    // 3 - Watch the globbal player state
-    PlayerState playerState = context.watch<PlayerState>();
-
     return Container(
       color: settingsState.theme.backgroundColor,
       child: Column(
@@ -34,14 +25,15 @@ class LibraryScreen extends StatelessWidget {
 
           Expanded(
             child: ListView.builder(
-              itemCount: songs.length,
-              itemBuilder: (context, index) => SongTile(
-                song: songs[index],
-                isPlaying: playerState.currentSong == songs[index],
-                onTap: () {
-                  playerState.start(songs[index]);
-                },
-              ),
+              itemCount: viewModel.songs.length,
+              itemBuilder: (context, index) {
+                final song = viewModel.songs[index];
+                return SongTile(
+                  song: song,
+                  isPlaying: viewModel.isPlaying(song), 
+                  onTap: () => viewModel.play(song),
+                );
+              },
             ),
           ),
         ],
